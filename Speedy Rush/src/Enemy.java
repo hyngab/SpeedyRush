@@ -102,7 +102,8 @@ public class Enemy extends Entity implements Runnable{
 					destroy();
 				}
 			try {
-				Thread.sleep((long)(25*(2*GameWorld.currentLevel)));
+				Thread.sleep((long)(21-(2*GameWorld.currentLevel)));
+				//Thread.sleep(1);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -137,7 +138,7 @@ public class Enemy extends Entity implements Runnable{
 		{
 			//System.out.println("hit");
 			Player.armor -= 10;
-			GameWorld.txtArmor.setText("Armor: " + Player.armor);
+			//GameWorld.txtArmor.setText("Armor: " + Player.armor);
 			this.EnemyView.setVisible(false);
 			this.EnemyThread = null;
 			/*

@@ -33,7 +33,9 @@ public class GameWorld implements Runnable{
 	boolean isGameStarted = false;
 	//Enemy enemy = new Enemy();
 	Enemy[] enemyList = new Enemy[10];
-	int nextLevelScore[] = {1000,3000,6000,10000,20000,30000,40000,50000,75000,100000};
+	Supplement [] SuppList = new Supplement [5];
+	//int nextLevelScore[] = {1000,2000,3000,4500,6000,10000};
+	int nextLevelScore[] = {200,400,600,800};
 	
 	//Thread enemythread;
 	Thread checkGameThread;
@@ -193,6 +195,15 @@ public class GameWorld implements Runnable{
 				}
 		}
 		
+		for(int i =0; i<SuppList.length;i++){
+			//roadPane.getChildren().remove(enemyList[Enemy.numberOfEnemy].EnemyView);
+			if(SuppList[i] != null){
+				SuppList[i].destroy();
+				SuppList[i]=null;
+			}
+	}
+		
+		
 		//enemyList = null;
 		isGameStarted = false;
 		roadPane.getChildren().clear();
@@ -204,18 +215,22 @@ public class GameWorld implements Runnable{
 	}
 	
 	public void checkGame(){
+		txtScore.setText("Score: " + playerScore);
+		txtArmor.setText("Armor: " + Player.armor);
 		if(Player.armor <= 0){
 			
 			Platform.runLater(new Runnable() {
                 @Override public void run() {
                 	gameOver();
+    
+                	gameClass.gameOver.setScore(playerScore);
                 	gameClass.stage.setScene(gameClass.gameOver.gameOverScene);
                 }
             });
 			
 		}
 		if(playerScore >= nextLevelScore[currentLevel-1]){
-			if (currentLevel < 10){
+			if (currentLevel < nextLevelScore.length){
 			currentLevel += 1;
 			txtLevel.setText("Level " + currentLevel);
 			levelMultiplier -= 0.08;
@@ -231,6 +246,7 @@ public class GameWorld implements Runnable{
 		while (isGameStarted == true && isGameOver == false){
 			//checkGame();
 			EnemySpawn();
+			SuppSpawn();
 			//new Thread(enemyList[Enemy.numberOfEnemy]).start();
 			System.out.println(Enemy.numberOfEnemy);
 			try {
@@ -265,9 +281,23 @@ public class GameWorld implements Runnable{
 	public static void addScore(){
 		System.out.println("addScore()");
 		playerScore += 100;
-		txtScore.setText("Score: " + playerScore);
+		//txtScore.setText("Score: " + playerScore);
 	}
 	
+	public void SuppSpawn(){
+		Platform.runLater(new Runnable() {
+			   @Override
+			   public void run() {
+				   if (SuppList[Supplement.numberOfSupp] != null){
+					   roadPane.getChildren().remove(SuppList[Supplement.numberOfSupp].SuppView);
+					   SuppList[Supplement.numberOfSupp].SuppThread = null;
+					   SuppList[Supplement.numberOfSupp] = null;
+				   }
+				   SuppList[Supplement.numberOfSupp] = new Supplement(roadPane);  
+				   System.out.println(SuppList[Supplement.numberOfSupp]);
+			   }
+			});
+	}
 	
 	//
 	class checkCollision extends Thread{

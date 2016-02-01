@@ -1,8 +1,8 @@
 import javafx.scene.image.Image;
 
 public abstract class Entity {
-	int xCoord;
-	int yCoord;
+	double xCoord;
+	double yCoord;
 	int width;
 	int length;
 	float speed;

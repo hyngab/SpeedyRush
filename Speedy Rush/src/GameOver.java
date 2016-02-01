@@ -15,18 +15,19 @@ public class GameOver {
 		//Player player = new Player();
 		Pane gameOverPane;
 		Pane roadPane;
-		
-		static int playerScore = 0;
-
-		//Text txtScore;
+		Text txtScore;
+		int highScore[] = {100,1000,2000,3000,5000};
+		String highScorePlayer[] = {"Timture","Sam","Toby","Ben","Leo"};
+		//int highScore[5];
+		//String highScorePlayer[5];
 		
 		
 		GameOver(Game game){
-			gameOverPane = new Pane();
-			//roadPane = new Pane();
-			
-			gameOverScene = new Scene(gameOverPane,400,600);
-			Font gameOverFont = new Font("Consolas",40);
+		gameOverPane = new Pane();
+		//roadPane = new Pane();
+		
+		gameOverScene = new Scene(gameOverPane,400,600);
+		Font gameOverFont = new Font("Consolas",40);
 			
 			Text txtGameOver = new Text("Game Over");
 			txtGameOver.setFont(gameOverFont);
@@ -35,7 +36,7 @@ public class GameOver {
 			
 			
 			gameOverFont = new Font("Consolas",26);
-	        Text txtScore = new Text("Your Score: " + playerScore);
+	        txtScore = new Text("Your Score: ");
 	        txtScore.setFont(gameOverFont);
 	        txtScore.setLayoutX(45);
 	        txtScore.setLayoutY(215);
@@ -70,4 +71,10 @@ public class GameOver {
 			gameOverPane.getChildren().add(btnTitle);
 			
 		}
+		
+		public void setScore(int score){
+			txtScore.setText("Your Score: " + score);
+		}
+		
+		
 }

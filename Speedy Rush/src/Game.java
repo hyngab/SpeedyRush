@@ -31,10 +31,12 @@ public class Game extends Application {
 	Player player = new Player();
 	Scene titleScene;
 	GameOver gameOver;
+	ScoreBoard scoreBoard;
 	
 	public void start(Stage titleStage){
 		GameWorld gameWorld = new GameWorld(this);
 		gameOver = new GameOver(this);
+		scoreBoard = new ScoreBoard(this);
 		
 		stage = titleStage;	
 		stage.setTitle("Speedy Rush");
@@ -66,7 +68,10 @@ public class Game extends Application {
 		btnScoreBoard.setOnAction(new EventHandler<ActionEvent>() {
 	            @Override
 	            public void handle(ActionEvent event) {
-	                System.out.println("Hello World!");
+	                //System.out.println("Hello World!");
+	            	scoreBoard.updateScoreBoard();
+	            	stage.setScene(scoreBoard.scoreBoardScene);
+	      	
 	            }
 	        });
 		
