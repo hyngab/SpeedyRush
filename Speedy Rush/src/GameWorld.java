@@ -1,45 +1,58 @@
-import javax.imageio.ImageIO;
-
+import java.nio.file.Paths;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.AudioClip;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
 
 public class GameWorld implements Runnable{
 	Scene gameScene;
-	Player player = new Player();
+	//Player player = new Player();
 	Pane gameWorldPane;
 	Pane roadPane;
+	Pane animationPane;
+	
 	static int currentLevel = 1;
 	static float levelMultiplier = 1;
 	static int playerScore = 0;
-	long timeInterval = 8000;
+	long timeInterval;
 	boolean isGameOver = false;
 	boolean isGameStarted = false;
-	//Enemy enemy = new Enemy();
-	Enemy[] enemyList = new Enemy[10];
+	Enemy[] enemyList = new Enemy[15];
 	Supplement [] SuppList = new Supplement [5];
+	Invincible[] Inv = new Invincible [2];
+	
 	//int nextLevelScore[] = {1000,2000,3000,4500,6000,10000};
 	int nextLevelScore[] = {200,400,600,800};
+	//MediaPlayer mediaPlayer = new MediaPlayer();
+	//java.net.URL bgMusicLink = getClass().getResource("Space_Boy.mp3");
+	Media bgMusicFile = new Media(getClass().getResource("/audio/SpaceBoy.mp3").toString());
+	MediaPlayer bgMusic = new MediaPlayer (bgMusicFile);
 	
-	//Thread enemythread;
+	AudioClip crashSound = new AudioClip(Paths.get("res/audio/carCrash.mp3").toUri().toString());
+	AudioClip gameOverSound = new AudioClip(Paths.get("res/audio/gameOver.mp3").toUri().toString());
+
+	Timeline tl;
+	KeyValue[] linesY;
+	KeyValue[] linesNewY;
+	
 	Thread checkGameThread;
-	Thread mainGame = new Thread(this);
+	Thread mainGame = new Thread();
+	Thread suppThread = new Thread();
+	Thread invThread = new Thread();
 	
 	static Text txtLevel;
 	static Text txtScore;
@@ -52,6 +65,7 @@ public class GameWorld implements Runnable{
 		gameWorldPane = new Pane();
 		roadPane = new Pane();
 		gameClass = game;
+		animationPane = new Pane();
 		
 		gameScene = new Scene(gameWorldPane,400,600);
 		Font gameFont = new Font("Consolas",21);
@@ -76,25 +90,24 @@ public class GameWorld implements Runnable{
         txtScore.setLayoutX(220);
         txtScore.setLayoutY(30);
          
-        txtArmor = new Text("Armor:" + player.armor);
+        txtArmor = new Text("Armor:" + Player.armor);
         txtArmor.setFont(gameFont);
         txtArmor.setLayoutX(220);
         txtArmor.setLayoutY(60);
 		
-        roadStartAnimation(gameScene);
+        gameClass.roadStartAnimation(animationPane);
+        gameWorldPane.getChildren().add(animationPane);
         gameWorldPane.getChildren().add(roadPane);
 		gameWorldPane.getChildren().add(levelBox);
 		gameWorldPane.getChildren().add(playerInfoBox);
 		gameWorldPane.getChildren().add(txtLevel);
 		gameWorldPane.getChildren().add(txtScore);
-		gameWorldPane.getChildren().add(txtArmor);
-		
-		
-		
+		gameWorldPane.getChildren().add(txtArmor);		
 	}
 
+	
 	public void roadStartAnimation(Scene scene){
-		 final Pane root = (Pane) scene.getRoot();
+		 Pane root = (Pane) scene.getRoot();
 		 
 		 Rectangle backgroundRoad = new Rectangle(250,600);
 	     backgroundRoad.setStroke(Color.BLACK);
@@ -118,9 +131,9 @@ public class GameWorld implements Runnable{
 	        root.getChildren().add(yellowLines[i]);
 		}
 		
-		Timeline tl = new Timeline();
-		KeyValue[] linesY = new KeyValue[8];
-		KeyValue[] linesNewY = new KeyValue[8];
+		tl = new Timeline();
+		linesY = new KeyValue[8];
+		linesNewY = new KeyValue[8];
 		
 		for (int i = 0; i<8; i++){
 			linesY[i] = new KeyValue(yellowLines[i].layoutYProperty(), yellowLines[i].getLayoutY());
@@ -139,14 +152,24 @@ public class GameWorld implements Runnable{
 		tl.play();	
 	}
 	
+	
+	
+	
 	public void initGame(){	
 	     try {
+	    	 	invThread.join();
+	    	 	suppThread.join();
 				mainGame.join();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	     //Thread mainGame = new Thread(this);
+	    
+	     roadPane.getChildren().clear();
+	     bgMusic.setCycleCount(AudioClip.INDEFINITE);
+
+	     bgMusic.play();
 	     mainGame = new Thread(this);
 	     checkGameThread = new Thread( new Runnable(){
 	    	 public void run(){
@@ -162,30 +185,71 @@ public class GameWorld implements Runnable{
 	    	 }
 	     });
 	     
-	     player.create(roadPane);
+	     invThread = new Thread( new Runnable(){
+	    	 public void run(){
+	    		 while (isGameStarted == true && isGameOver == false){
+	    			 InvSpawn();
+	    			 try {
+						Thread.sleep(20000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	    		 }
+	    		 System.out.println("invThread end");
+	    	 }
+	     });
+	     
+
+			suppThread = new Thread( new Runnable(){
+		    	 public void run(){
+		    		 while (isGameStarted == true && isGameOver == false){
+		    			 try {
+							Thread.sleep(10000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+		    			 SuppSpawn();
+		    		 }
+		    		 System.out.println("suppThread end");
+		    	 }
+		     });
+			
+	     
+	     
+	     Player.create(roadPane);
+	     levelMultiplier = 1;
 	     	currentLevel = 1;
 	     	playerScore = 0;
 	     	txtLevel.setText("Level " + currentLevel);        
 	        txtScore.setText("Score: " + playerScore);
-	        txtArmor.setText("Armor:" + player.armor);
+	        txtArmor.setText("Armor:" + Player.armor);
 			
 	        //roadStartAnimation(gameScene);
 	        
 	     gameScene.setOnMouseMoved(
 					new EventHandler<MouseEvent>(){
 						public void handle(MouseEvent e){
-							player.move(e);	
+							Player.move(e);	
 						}
 					});
 	     isGameStarted = true;
+	     timeInterval = 8000;
 	     
 	     mainGame.start();
 	     checkGameThread.start();
+	     invThread.start();
+	     suppThread.start();
+	     
 	     
 	}
 	public void gameOver(){
 		//mainGame = null;
 		//checkGameThread = null;
+		
+		roadPane.getChildren().clear();
+			
 		
 		for(int i =0; i<enemyList.length;i++){
 				//roadPane.getChildren().remove(enemyList[Enemy.numberOfEnemy].EnemyView);
@@ -200,18 +264,37 @@ public class GameWorld implements Runnable{
 			if(SuppList[i] != null){
 				SuppList[i].destroy();
 				SuppList[i]=null;
-			}
+			}		
 	}
 		
+		bgMusic.stop();
+		gameOverSound.play();
+		int rank = getRank();
 		
-		//enemyList = null;
+        //gameClass.gameOver.setScore(playerScore);
+        //System.out.println(gameClass.scoreBoard.highScore[4]);
 		isGameStarted = false;
-		roadPane.getChildren().clear();
+		//TODO roadPane.getChildren().clear();
+		//gameClass.titleScreenPane.getChildren().add(Player.playerView);
+		//player.create(gameClass.titleScreenPane);
+		
+		if(rank>0){
+			gameClass.gameOver.setScene(playerScore,rank);
+		}else
+		{
+			gameClass.gameOver.setScene(playerScore,rank);
+		}
 		
 	}
 	
-	public static void levelUp(){
+	public int getRank(){
+	 for (int i = 0; i<gameClass.scoreBoard.highScore.length;i++){
+		if(playerScore > gameClass.scoreBoard.highScore[i]){
+			return i+1;
+		} 
 		
+	 }
+		return 0;
 	}
 	
 	public void checkGame(){
@@ -222,31 +305,40 @@ public class GameWorld implements Runnable{
 			Platform.runLater(new Runnable() {
                 @Override public void run() {
                 	gameOver();
-    
-                	gameClass.gameOver.setScore(playerScore);
+                		
                 	gameClass.stage.setScene(gameClass.gameOver.gameOverScene);
                 }
             });
 			
 		}
+		if (currentLevel <= nextLevelScore.length){
 		if(playerScore >= nextLevelScore[currentLevel-1]){
-			if (currentLevel < nextLevelScore.length){
 			currentLevel += 1;
 			txtLevel.setText("Level " + currentLevel);
-			levelMultiplier -= 0.08;
+			levelMultiplier -= 0.19;
 			timeInterval = (long) (timeInterval*levelMultiplier);
+			Platform.runLater(new Runnable() {
+                @Override public void run() {
+                	System.out.println("speed up");
+                	gameClass.roadAnimationchange(animationPane, currentLevel);
+                }
+            });
+			
+	
 			}
 		}
+		
 	}
 	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		//new Thread(enemy).start();
+		
 		while (isGameStarted == true && isGameOver == false){
 			//checkGame();
 			EnemySpawn();
-			SuppSpawn();
+			//SuppSpawn();
 			//new Thread(enemyList[Enemy.numberOfEnemy]).start();
 			System.out.println(Enemy.numberOfEnemy);
 			try {
@@ -276,10 +368,10 @@ public class GameWorld implements Runnable{
 				   System.out.println(enemyList[Enemy.numberOfEnemy]);
 			   }
 			});
-	}
+	} 
 	
 	public static void addScore(){
-		System.out.println("addScore()");
+		//System.out.println("addScore()");
 		playerScore += 100;
 		//txtScore.setText("Score: " + playerScore);
 	}
@@ -299,6 +391,23 @@ public class GameWorld implements Runnable{
 			});
 	}
 	
+	public void InvSpawn(){
+		Platform.runLater(new Runnable() {
+			   @Override
+			   public void run() {
+				   if (Inv[Invincible.numberOfinv] != null){
+					   roadPane.getChildren().remove(Inv[Invincible.numberOfinv].InvView);
+					   Inv[Invincible.numberOfinv].InvThread = null;
+					   Inv[Invincible.numberOfinv] = null;
+				   }
+				   Inv[Invincible.numberOfinv] = new Invincible(roadPane);  
+				   //System.out.println(SuppList[Supplement.numberOfSupp]);
+			   }
+			});
+	}
+	
+	
+	
 	//
 	class checkCollision extends Thread{
 		String entityType;
@@ -309,6 +418,10 @@ public class GameWorld implements Runnable{
 			
 		}		
 	}
+	
+	
+	
+	
 	
 	//
 }

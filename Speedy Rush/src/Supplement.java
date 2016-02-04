@@ -1,7 +1,10 @@
+import java.nio.file.Paths;
+
 import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.AudioClip;
 
 public class Supplement extends Collectible implements Runnable{
 
@@ -16,6 +19,7 @@ public class Supplement extends Collectible implements Runnable{
 		int armorSupp = 10;
 		static int numberOfSupp = 0;
 		Thread SuppThread;
+		static AudioClip suppSound = new AudioClip(Paths.get("res/audio/supplement.mp3").toUri().toString());
 
 		Supplement(Pane pane){	
 			xCoord = (250-width)*Math.random() + 70;
@@ -38,7 +42,7 @@ public class Supplement extends Collectible implements Runnable{
 		public void run() {
 			// TODO Auto-generated method stub
 			while (this.SuppThread != null){
-				this.move(1);  //moving downward
+				this.move();  //moving downward
 				this.checktake();	
 				if(this.yCoord > 610){
 					destroy();
@@ -69,6 +73,7 @@ public class Supplement extends Collectible implements Runnable{
 					(xCoord + width > Player.xCoord))
 			{
 				//System.out.println("hit");
+				suppSound.play();
 				Player.armor += 10;
 				GameWorld.txtArmor.setText("Armor: " + Player.armor);
 				this.SuppView.setVisible(false);
@@ -82,7 +87,7 @@ public class Supplement extends Collectible implements Runnable{
 		}
 		
 		@Override
-		public void move(float multiplier) {
+		public void move() {
 			// TODO Auto-generated method stub
 			Platform.runLater(new Runnable() {
 				   @Override

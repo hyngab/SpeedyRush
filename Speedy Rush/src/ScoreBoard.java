@@ -5,31 +5,28 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 
 public class ScoreBoard {
 	Scene scoreBoardScene;
-	//Player player = new Player();
 	Pane scoreBoardPane;
-	//Pane roadPane;
 
-	int highScore[] = {100,1000,2000,3000,5000};
-	String highScorePlayer[] = {"Timture","Sam","Toby","Ben","Leo"};
-	Text txtScoreList[] = new Text[5] ;
+	//int highScore[] = {10000,5000,300,100,100};
+	//String highScorePlayer[] = {"Timture","Sam","Toby","Ben","Leo"};
+	
+	int highScore[] = new int[5];
+	String highScorePlayer[] = new String[5];
+		
+	Text txtScoreList[] = new Text[5];
 	Text txtNameList[] = new Text[5];
 	Text txtRankList[] = new Text[5];
 	
 	
 	ScoreBoard(Game game){
 		scoreBoardPane = new Pane();
-		//roadPane = new Pane();
-		//gameClass = game;
-		
 		scoreBoardScene = new Scene(scoreBoardPane,400,600);
+		
 		Font gameFont = new Font("Consolas",40);
 
 		Text txtTitle = new Text("Score Board");
@@ -66,24 +63,21 @@ public class ScoreBoard {
         	txtRankList[i].setLayoutX(60);
         	txtRankList[i].setLayoutY(160 + i*55);
        	 	scoreBoardPane.getChildren().add(txtRankList[i]);
-       }
+        }
         
         for (int i=0; i < txtScoreList.length; i++){
         	 txtScoreList[i] = new Text();
         	 txtScoreList[i].setFont(gameFont);
-        	 //txtScoreList[i].setLayoutX(250);
-        	 //txtScoreList[i].setLayoutY(160 + i*55);
-        	 //txtScoreList[i].setTextAlignment(TextAlignment.RIGHT);;
         	 vboxScore.getChildren().add(txtScoreList[i]);
-        	 //scoreBoardPane.getChildren().add(txtScoreList[i]);
         }
+        
         for (int i=0; i < txtNameList.length; i++){
         	txtNameList[i] = new Text();
         	txtNameList[i].setFont(gameFont);
         	txtNameList[i].setLayoutX(135);
         	txtNameList[i].setLayoutY(160 + i*55);
         	scoreBoardPane.getChildren().add(txtNameList[i]);
-       }
+        }
            
         Button btnTitle = new Button();
         btnTitle.setFont(gameFont);
@@ -93,23 +87,16 @@ public class ScoreBoard {
         btnTitle.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-            	//initGameScene();
-            	//titleStage.setScene(gameScene); 
-            	//gameWorld.initGame();
             	game.stage.setScene(game.titleScene);
             }
         });
         
-        //roadStartAnimation(gameScene);
-        //scoreBoardPane.getChildren().add(roadPane);
         scoreBoardPane.getChildren().add(txtTitle);
         scoreBoardPane.getChildren().add(txtScore);
         scoreBoardPane.getChildren().add(txtRank);
         scoreBoardPane.getChildren().add(txtName);
         scoreBoardPane.getChildren().add(vboxScore);
-        scoreBoardPane.getChildren().add(btnTitle);
-        //scoreBoardPane.getChildren().add(txtArmor);
-       
+        scoreBoardPane.getChildren().add(btnTitle);       
 	}
 	
 	public void updateScoreBoard(){
@@ -122,5 +109,31 @@ public class ScoreBoard {
 
 	}
 	
+	public void insertScoreBoard(String playerName, int playerRank){
+		
+		System.out.println(playerName);
+		if(playerName.length() == 0){
+			playerName = "NoName";
+		}
+		
+		System.out.println(playerName);
+		
+		for(int i = highScore.length -1; i >= playerRank -1 ;i--){
+			System.out.println(i);
+			System.out.println(playerRank);
+			if (i > 0){
+				if (highScore[i-1] != 0){
+					highScore[i] = highScore[i-1];
+					highScorePlayer[i] = highScorePlayer[i-1];
+				}
+			}
+			if (i == playerRank - 1){
+				highScore[i] = GameWorld.playerScore;
+				highScorePlayer[i] = playerName;
+			}
+	
+		}
+
+	}
 	
 }

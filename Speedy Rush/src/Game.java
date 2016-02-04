@@ -32,43 +32,54 @@ public class Game extends Application {
 	Scene titleScene;
 	GameOver gameOver;
 	ScoreBoard scoreBoard;
+	static Pane titleScreenPane;
+	
+	static Timeline tl;
+	static KeyValue[] linesY;
+	static KeyValue[] linesNewY;
+	static KeyFrame kf1;
+	static KeyFrame kf2;
+	Pane root;
+	
+	
+	
 	
 	public void start(Stage titleStage){
 		GameWorld gameWorld = new GameWorld(this);
 		gameOver = new GameOver(this);
 		scoreBoard = new ScoreBoard(this);
 		
+		
 		stage = titleStage;	
 		stage.setTitle("Speedy Rush");
-		//stage.setResizable(false);
-		Pane titleScreenPane = new Pane();
+		stage.setResizable(false);
+		titleScreenPane = new Pane();
 		titleScene = new Scene(titleScreenPane,400,600);	
-		Font myFont = new Font("Consolas",18);
+		Font gameFont = new Font("Consolas",18);
+		
+		
 
 		
 		Button btnStart = new Button();
-		btnStart.setFont(myFont);
+		btnStart.setFont(gameFont);
 		btnStart.setText("Start Game");
 		
 		btnStart.setOnAction(new EventHandler<ActionEvent>() {
 	            @Override
 	            public void handle(ActionEvent event) {
-	            	//initGameScene();
-	            	//titleStage.setScene(gameScene); 
 	            	gameWorld.initGame();
+	            	titleScreenPane.getChildren().remove(Player.playerView);
 	            	stage.setScene(gameWorld.gameScene);
-	            	
 	            }
 	        });
 		
 		
 		Button btnScoreBoard = new Button();
-		btnScoreBoard.setFont(myFont);
+		btnScoreBoard.setFont(gameFont);
 		btnScoreBoard.setText("Highscore");
 		btnScoreBoard.setOnAction(new EventHandler<ActionEvent>() {
 	            @Override
 	            public void handle(ActionEvent event) {
-	                //System.out.println("Hello World!");
 	            	scoreBoard.updateScoreBoard();
 	            	stage.setScene(scoreBoard.scoreBoardScene);
 	      	
@@ -113,12 +124,11 @@ public class Game extends Application {
         backgroundRoad.setLayoutX(75);
         backgroundRoad.setLayoutY(0);
         
+        //gameWorld.roadStartAnimation(titleScene);
+        roadStartAnimation(titleScreenPane); 
         
-        //titleScreenPane.getChildren().add(backgroundRoad);
         
-        gameWorld.roadStartAnimation(titleScene);
-         
-        player.create(titleScreenPane);
+        Player.create(titleScreenPane);
         
         ImageView arrowLeft = new ImageView(new Image("/icon/arrowLeft.png"));
         ImageView arrowRight = new ImageView(new Image("/icon/arrowRight.png"));
@@ -145,7 +155,6 @@ public class Game extends Application {
 					}
 				});
         
-        //TODO: sizable issue (not allow windows to resize)
         
         titleScreenPane.getChildren().add(arrowLeft);
         titleScreenPane.getChildren().add(arrowRight);
@@ -169,5 +178,152 @@ public class Game extends Application {
 		launch(args);
 	}
 	
+	public void roadStartAnimation(Pane pane){
+		 //root = (Pane) scene.getRoot();
+		 
+		 Rectangle backgroundRoad = new Rectangle(250,600);
+	     backgroundRoad.setStroke(Color.BLACK);
+	     backgroundRoad.setFill(Color.web("#f2f2f2"));
+	     backgroundRoad.setLayoutX(75);
+         backgroundRoad.setLayoutY(0);
+		 
+         pane.getChildren().add(backgroundRoad);
+        
+		 Rectangle[] yellowLines = new Rectangle[8];
+		 
+
+		for (int i = 0; i<8; i++){
+			yellowLines[i] = new Rectangle(10,75);
+			yellowLines[i].setStroke(Color.BLACK);
+	        yellowLines[i].setArcHeight(5);
+	        yellowLines[i].setArcWidth(5);
+	        yellowLines[i].setFill(Color.web("#ffff00"));
+	        yellowLines[i].setLayoutX(195);
+	        yellowLines[i].setLayoutY(-90 + i*100);
+	        pane.getChildren().add(yellowLines[i]);
+		}
+		
+		tl = new Timeline();
+		linesY = new KeyValue[8];
+		linesNewY = new KeyValue[8];
+		
+		for (int i = 0; i<8; i++){
+			linesY[i] = new KeyValue(yellowLines[i].layoutYProperty(), yellowLines[i].getLayoutY());
+		}
+		for (int i = 0; i<8; i++){
+			linesNewY[i] = new KeyValue(yellowLines[i].layoutYProperty(), yellowLines[i].getLayoutY()+100);
+		}
+		
+		
+		kf1 = new KeyFrame(Duration.millis(0),linesY);
+		kf2 = new KeyFrame(Duration.millis(2000),linesNewY);
+		
+		tl.getKeyFrames().addAll(kf1,kf2);
+		tl.setCycleCount(Animation.INDEFINITE);
+
+		tl.play();	
+		System.out.println(tl);
+	}
+	
+	public void refreshPlayer(){
+		 player.create(titleScreenPane);
+	}
+	
+	public void roadAnimationchange(Pane pane, int currentLevel){
+
+		 pane.getChildren().clear();
+		 Rectangle backgroundRoad = new Rectangle(250,600);
+	     backgroundRoad.setStroke(Color.BLACK);
+	     backgroundRoad.setFill(Color.web("#f2f2f2"));
+	     backgroundRoad.setLayoutX(75);
+         backgroundRoad.setLayoutY(0);
+		 
+         pane.getChildren().add(backgroundRoad);
+       
+		 Rectangle[] yellowLines = new Rectangle[8];
+		 
+
+		for (int i = 0; i<8; i++){
+			yellowLines[i] = new Rectangle(10,75);
+			yellowLines[i].setStroke(Color.BLACK);
+	        yellowLines[i].setArcHeight(5);
+	        yellowLines[i].setArcWidth(5);
+	        yellowLines[i].setFill(Color.web("#ffff00"));
+	        yellowLines[i].setLayoutX(195);
+	        yellowLines[i].setLayoutY(-90 + i*100);
+	        pane.getChildren().add(yellowLines[i]);
+		}
+		
+		tl = new Timeline();
+		linesY = new KeyValue[8];
+		linesNewY = new KeyValue[8];
+		
+		for (int i = 0; i<8; i++){
+			linesY[i] = new KeyValue(yellowLines[i].layoutYProperty(), yellowLines[i].getLayoutY());
+		}
+		for (int i = 0; i<8; i++){
+			linesNewY[i] = new KeyValue(yellowLines[i].layoutYProperty(), yellowLines[i].getLayoutY()+100);
+		}
+		
+		
+		kf1 = new KeyFrame(Duration.millis(0),linesY);
+		kf2 = new KeyFrame(Duration.millis(2000-currentLevel*350),linesNewY);
+		
+		tl.getKeyFrames().addAll(kf1,kf2);
+		tl.setCycleCount(Animation.INDEFINITE);
+
+		tl.play();	
+		System.out.println(tl);
+	
+		 /*
+		 root = (Pane) scene.getRoot();
+		 
+		 System.out.println(tl);
+		 //root.getChildren().clear();
+		 /*
+		 Rectangle backgroundRoad = new Rectangle(250,600);
+	     backgroundRoad.setStroke(Color.BLACK);
+	     backgroundRoad.setFill(Color.web("#f2f2f2"));
+	     backgroundRoad.setLayoutX(75);
+         backgroundRoad.setLayoutY(0);
+		 
+        //root.getChildren().add(backgroundRoad);
+       
+		 Rectangle[] yellowLines = new Rectangle[8];
+		 
+
+		for (int i = 0; i<8; i++){
+	        root.getChildren().add(yellowLines[i]);
+		}
+		
+		/*
+		for (int i = 0; i<8; i++){
+			linesY[i] = new KeyValue(yellowLines[i].layoutYProperty(), yellowLines[i].getLayoutY());
+		}
+		for (int i = 0; i<8; i++){
+			linesNewY[i] = new KeyValue(yellowLines[i].layoutYProperty(), yellowLines[i].getLayoutY()+100);
+		}
+		*/
+		/*
+		System.out.println(currentLevel);
+		tl.stop();
+		tl = new Timeline();
+
+		kf1 = new KeyFrame(Duration.millis(0),linesY);
+		kf2 = new KeyFrame(Duration.millis(2000-350*currentLevel),linesNewY);
+		
+		
+		tl.getKeyFrames().addAll(kf1,kf2);
+		tl.setCycleCount(Animation.INDEFINITE);
+		
+		//tl.stop();
+		//tl.play();
+		
+		*/
+		
+		
+		
+		
+	}
 	
 }
